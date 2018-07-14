@@ -41,3 +41,9 @@
   shell: | 
          git config --global user.email "{{user_email}}" && 
          git config --global user.name "{{user_name}}"
+
+- name: Set panel configuration
+  copy:
+    src: lxpanel
+    dest: ~/.config/
+  
