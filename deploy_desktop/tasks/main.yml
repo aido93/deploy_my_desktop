@@ -21,6 +21,9 @@
       - python3-pip 
       - python3-virtualenv 
       - virtualenvwrapper
+      - libxss1
+      - libappindicator1
+      - libindicator7
 
 - name: Delete unneeded packages
   become: true
@@ -31,6 +34,21 @@
     packages:
       - gnumeric
       - abiword
+
+- name: Download Google Chrome
+  get_url: 
+    url: https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
+    dest: /tmp/google-chrome.deb
+
+- name: Install Google Chrome
+  become: true
+  apt:
+    deb: /tmp/google-chrome.deb
+
+- name: Delete unneeded Google Chrome deb
+  file:
+    path: /tmp/google-chrome.deb
+    state: absent
 
 - name: Copy configs
   copy:
