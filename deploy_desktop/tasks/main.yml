@@ -9,6 +9,7 @@
       - vim 
       - guake 
       - g++ 
+      - git
       - vagrant 
       - vlc 
       - libreoffice 
@@ -35,3 +36,8 @@
   copy:
     src: .vimrc
     dest: ~/.vimrc
+
+- name: Set git global configs
+  shell: | 
+         git config --global user.email "{{user_email}}" && 
+         git config --global user.name "{{user_name}}"
