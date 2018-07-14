@@ -7,11 +7,12 @@
   vars:
     packages:
       - vim 
-      - guake 
-      - g++ 
+      - ssh
       - git
       - vagrant 
       - vlc 
+      - guake 
+      - g++ 
       - libreoffice 
       - htop 
       - nmap 
@@ -34,6 +35,18 @@
     packages:
       - gnumeric
       - abiword
+
+- name: Check SSH private
+  stat: path=~/.ssh/id_rsa
+  register: private_exists
+
+- name: Check SSH public
+  stat: path=~/.ssh/id_rsa.pub
+  register: public_exists
+
+- name: Create keypair
+  shell: ssh-keygen -t rsa -b 2048 -f ~/.ssh/id_rsa -q -N ""
+  when: not private_exists.stat.exists or not public_exists.stat.exists
 
 - name: Download Google Chrome
   get_url: 
