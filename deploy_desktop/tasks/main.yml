@@ -1,0 +1,37 @@
+---
+# tasks file for deploy_desktop
+- name: Install a list of packages
+  become: true
+  apt:
+    name: "{{ packages }}"
+  vars:
+    packages:
+      - vim 
+      - guake 
+      - g++ 
+      - vagrant 
+      - vlc 
+      - libreoffice 
+      - htop 
+      - nmap 
+      - aptitude
+      - gparted
+      - wcalc
+      - python3-pip 
+      - python3-virtualenv 
+      - virtualenvwrapper
+
+- name: Delete unneeded packages
+  become: true
+  apt:
+    name: "{{ packages }}"
+    state: absent
+  vars:
+    packages:
+      - gnumeric
+      - abiword
+
+- name: Copy configs
+  copy:
+    src: .vimrc
+    dest: ~/.vimrc
