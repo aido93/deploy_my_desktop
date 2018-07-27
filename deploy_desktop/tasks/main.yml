@@ -17,6 +17,7 @@
       - libreoffice 
       - htop 
       - nmap 
+      - rename
       - aptitude
       - gparted
       - wcalc
