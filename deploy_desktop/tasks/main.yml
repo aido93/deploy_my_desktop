@@ -80,3 +80,93 @@
     src: lxpanel
     dest: ~/.config/
   
+- name: Ensure old versions of Docker are not installed.
+  become: true
+  package:
+    name:
+      - docker
+      - docker-engine
+    state: absent
+
+- name: Ensure dependencies are installed.
+  become: true
+  apt:
+    name:
+      - apt-transport-https
+      - ca-certificates
+    state: present
+
+- name: Add Docker apt key.
+  become: true
+  apt_key:
+    url: https://download.docker.com/linux/ubuntu/gpg
+    id: 9DC858229FC7DD38854AE2D88D81803C0EBFCD88
+    state: present
+  register: add_repository_key
+  ignore_errors: "{{ docker_apt_ignore_key_error }}"
+
+- name: Ensure curl is present (on older systems without SNI).
+  become: true
+  package: name=curl state=present
+  when: add_repository_key is failed
+
+- name: Add Docker apt key (alternative for older systems without SNI).
+  become: true
+  shell: |
+    set -o pipefail
+    curl -sSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+  args:
+    warn: false
+  when: add_repository_key is failed
+
+- name: Add Docker repository.
+  become: true
+  apt_repository:
+    repo: "{{ docker_apt_repository }}"
+    state: present
+    update_cache: true
+
+- name: Install Docker.
+  become: true
+  package:
+    name: "{{ docker_package }}"
+    state: "{{ docker_package_state }}"
+  notify: restart docker
+
+- name: Ensure Docker is started and enabled at boot.
+  become: true
+  service:
+    name: docker
+    state: "{{ docker_service_state }}"
+    enabled: "{{ docker_service_enabled }}"
+
+- name: Check current docker-compose version.
+  become: true
+  command: docker-compose --version
+  register: docker_compose_current_version
+  changed_when: false
+  failed_when: false
+
+- name: Delete existing docker-compose version if it's different.
+  become: true
+  file:
+    path: "{{ docker_compose_path }}"
+    state: absent
+  when: >
+    docker_compose_current_version.stdout is defined
+    and docker_compose_version not in docker_compose_current_version.stdout
+
+- name: Install Docker Compose (if configured).
+  become: true
+  get_url:
+    url: https://github.com/docker/compose/releases/download/{{ docker_compose_version }}/docker-compose-Linux-x86_64
+    dest: "{{ docker_compose_path }}"
+    mode: 0755
+
+- name: Pull Swagger image
+  docker_image:
+    name: quay.io/goswagger/swagger
+    source: pull
+
+- name: Add swagger to bashrc
+  shell: echo "alias swagger=\"docker run --rm -it -e GOPATH=$HOME/go:/go -v $HOME:$HOME -w $(pwd) quay.io/goswagger/swagger\"" >> ~/.bashrc
