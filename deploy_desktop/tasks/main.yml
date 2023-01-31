@@ -7,6 +7,7 @@
   vars:
     packages:
       - vim 
+      - bat
       - ssh
       - git
       - vagrant 
@@ -162,3 +163,14 @@
     url: https://github.com/docker/compose/releases/download/{{ docker_compose_version }}/docker-compose-Linux-x86_64
     dest: "{{ docker_compose_path }}"
     mode: 0755
+
+- name: Creates bat directory
+  file:
+    path: ~/.local/bin
+    state: directory
+
+- name: Create bat symbolic link
+  file:
+    src: "/usr/bin/batcat"
+    dest: "~/.local/bin/cat"
+    state: link
